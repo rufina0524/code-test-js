@@ -21,5 +21,12 @@ export const getVenueNearLondon = async (venurName) => {
       'query=Satori'
     ]
   )
-  console.log(data.response);
+  return data.response;
+}
+
+export const getSimilarVenue = async (venueId) => {
+  const data = await request(
+    `${baseUrl}/search/${venueId}/similar`
+  );
+  return data.response;
 }
