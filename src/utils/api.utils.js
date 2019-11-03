@@ -13,12 +13,12 @@ const request = async (url, query = []) => {
   return response.json()
 }
 
-export const getVenueNearLondon = async (venurName) => {
+export const getVenueNearLondon = async (venueName) => {
   const data = await request(
     `${baseUrl}/search`,
     [
       'near=London',
-      'query=Satori'
+      `query=${venueName}`
     ]
   )
   return data.response;
