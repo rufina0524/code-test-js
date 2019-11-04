@@ -1,45 +1,34 @@
 import React from 'react';
 import * as d3 from 'd3';
+import { getSimilarVenue } from '../utils/api.utils';
 
-const drag = (simulation) => {
-  function dragstarted(d) {
-    if (!d3.event.active) simulation.alphaTarget(0.3).restart();
-    d.fx = d.x;
-    d.fy = d.y;
-  }
-  
-  function dragged(d) {
-    d.fx = d3.event.x;
-    d.fy = d3.event.y;
-  }
-  
-  function dragended(d) {
-    if (!d3.event.active) simulation.alphaTarget(0);
-    d.fx = null;
-    d.fy = null;
-  }
+const getChildNodes = async (seedId, nodes, setNodes, links, setLinks) => {
+  const data = await getSimilarVenue({
+    venueId: seedId
+  });
 
-return d3.drag()
-  .on("start", dragstarted)
-  .on("drag", dragged)
-  .on("end", dragended);
-}
+  setNodes(nodes.concat(data.similarVenues.items));
+  
+  const newLinks = data.similarVenues.items.map(item => ({
+    source: seedId, target: item.id
+  }));
+
+  setLinks(links.concat(newLinks));
+};
 
 const Graph = (props) => {
   const width = 680;
   const height = 340;
+  const { seedNode } = props;
+  const [ nodes, setNodes ] = React.useState([seedNode]);
+  const [ links, setLinks ] = React.useState([]);
 
-  var nodes = [
-    {"id": "Alice", "name": "Alice"},
-    {"id": "Bob", "name": "Bob"},
-    {"id": "Carol", "name": "Carol"}
-  ];
-  
-  var links = [
-    {"source": "Alice", "target": "Bob"},
-    {"source": "Bob", "target": "Carol"},
-    {"source": "Carol", "target": "Alice"}
-  ];
+  React.useEffect(() => {
+    getChildNodes(
+      seedNode.id, nodes, setNodes,
+      links, setLinks
+    );
+  }, []);
 
   const svg = d3.select('body')
     .append('svg')
@@ -79,10 +68,10 @@ const Graph = (props) => {
   })
   
   const restart = () => {
-    console.log(nodes);
-    console.log(links);
     simulation.nodes(nodes);
-    simulation.force('link', d3.forceLink(links).id(d => d.id).distance(200));
+    simulation.force('link',
+      d3.forceLink(links).id(d => d.id).distance(100)
+    );
     
     simulation.restart();
   };

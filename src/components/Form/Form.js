@@ -1,7 +1,13 @@
 import React, { useCallback, useState } from 'react';
 import FormInput from './FormInput';
 import FormResult from './FormResult';
+import Graph from '../Graph';
 import { getVenueNearLondon } from '../../utils/api.utils';
+
+const formStyle = {
+  position: "absolute",
+  left: 0
+};
 
 const formInputName = {
   clientId: 'clientId',
@@ -31,13 +37,20 @@ const onValueChange = (input, setInput) => (
   }
 );
 
-const Form = (props) => {
+const useVenueClick = (input, setSeedNode) => (
+  useCallback(async (event) => {
+    setSeedNode({ id: event.target.id });
+  }, [input])
+);
+
+const Form = () => {
   const [ results, setResults ] = useState([]);
   const [ input, setInput] = useState({});
+  const [ seedNode, setSeedNode ] = useState(null);
 
   return (
     <>
-      <form onSubmit={useSubmit(input, setResults)}>
+      <form style={formStyle} onSubmit={useSubmit(input, setResults)}>
         <FormInput
           type='text'
           name={formInputName.clientId}
@@ -61,7 +74,17 @@ const Form = (props) => {
           value='Submit'
         />
       </form>
-      <FormResult data={results}/>
+      <FormResult
+        data={results}
+        onClick={useVenueClick(input, setSeedNode)}
+      />
+      {
+        seedNode ?
+          <Graph
+            seedNode={seedNode}
+          />
+          : null
+      }
     </>
   );
 }

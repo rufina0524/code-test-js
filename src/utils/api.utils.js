@@ -30,9 +30,18 @@ export const getVenueNearLondon = async (input) => {
   }
 }
 
-export const getSimilarVenue = async (venueId) => {
-  const data = await request(
-    `${baseUrl}/search/${venueId}/similar`
-  );
-  return data.response;
+export const getSimilarVenue = async (params) => {
+  if (_isObject(params)) {
+    const { clientId, clientSecret, venueId = '' } = params;
+    
+    const data = await request(
+      `${baseUrl}/${venueId}/similar`,
+      [
+        `client_id=${clientId || defaultClientId}`,
+        `client_secret=${clientSecret || defaultClientSecret}`
+      ]
+    );
+    return data.response;
+  }
+  
 }
