@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 const style = {
   display: "block"
@@ -6,13 +7,15 @@ const style = {
 
 const FormInput = (props) => {
   return (
-    <form onSubmit={props.onSubmit}>
-      <input style={style} type="text" name="title" placeholder="Client ID" />
-      <input style={style} type="text" name="title" placeholder="Client Secret" />
-      <input style={style} type="text" className="form-control" name="title" placeholder="Restaurant Name" />
-      <input type="submit" value="Submit" />
-    </form>
+      <input
+        style={style}
+        {...props}
+      />
   )
+};
+
+FormInput.propTypes = {
+  type: PropTypes.string.isRequired
 };
 
 export default FormInput;
