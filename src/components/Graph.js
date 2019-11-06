@@ -1,60 +1,99 @@
 import React from 'react';
 import * as d3 from 'd3';
 import { getSimilarVenue } from '../utils/api.utils';
+import ObjectPath from 'object-path';
 
-const getChildNodes = async (seedId, nodes, setNodes, links, setLinks) => {
+const drag = (simulation) => {
+  function dragstarted(d) {
+    if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+    d.fx = d.x;
+    d.fy = d.y;
+  }
+  
+  function dragged(d) {
+    d.fx = d3.event.x;
+    d.fy = d3.event.y;
+  }
+  
+  function dragended(d) {
+    if (!d3.event.active) simulation.alphaTarget(0);
+    d.fx = null;
+    d.fy = null;
+  }
+  
+  return d3.drag()
+      .on("start", dragstarted)
+      .on("drag", dragged)
+      .on("end", dragended);
+};
+const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+
+const getLink = (svg) => (
+  svg.append("g")
+  .attr("stroke", "#FFF")
+  .attr("stroke-opacity", 1)
+  .selectAll("line")
+);
+const getNode = (svg) => (
+  svg.append("g")
+  .attr("stroke", "#fff")
+  .attr("stroke-width", 1.5)
+  .selectAll("circle")
+);
+
+const getNewVenues = async (seed) => {
   const data = await getSimilarVenue({
-    venueId: seedId
+    venueId: seed.id
   });
 
-  setNodes(nodes.concat(data.similarVenues.items));
-  
-  const newLinks = data.similarVenues.items.map(item => ({
-    source: seedId, target: item.id
-  }));
-
-  setLinks(links.concat(newLinks));
+  return ObjectPath.get(data, 'similarVenues.items', []);
 };
-
 const Graph = (props) => {
-  const width = 680;
-  const height = 340;
+  const width = 1280;
+  const height = 720;
+  const updateInterval = 3000;
   const { seedNode } = props;
-  const [ nodes, setNodes ] = React.useState([seedNode]);
-  const [ links, setLinks ] = React.useState([]);
+  let nodes = [seedNode];
+  let links = [];
+  let newNodes = [seedNode];
+  let newLinks = [];
+  let i = 0;
 
-  React.useEffect(() => {
-    getChildNodes(
-      seedNode.id, nodes, setNodes,
-      links, setLinks
-    );
-  }, []);
-
-  const svg = d3.select('body')
-    .append('svg')
-    .attr("style", "position: absolute; background: red; top: 30px; left: 500px;")
+  const svg = d3.select('#graphContainer')
+    .attr("style", "position: absolute; background: black; top: 30px; left: 500px;")
     .attr('width', width)
     .attr('height', height);
 
-  const simulation = d3.forceSimulation(nodes).force('center', d3.forceCenter(width / 2, height / 2));
-  
+  let link = getLink(svg);
+  let node = getNode(svg);
+  const nodeIds = [];
 
-  // Draw link line.
-  const link = svg.append("g")
-    .attr("stroke", "#000")
-    .attr("stroke-opacity", 1)
-    .selectAll("line")
-    .data(links)
-    .join("line");
+  const simulation = d3.forceSimulation(nodes)
+    .force('center', d3.forceCenter(width / 3, height / 3));
 
-  const node = svg.append("g")
-    .attr("stroke", "#fff")
-    .attr("stroke-width", 1.5)
-    .selectAll("circle")
-    .data(nodes)
-    .join("circle")
-    .attr("r", 5)
-    .attr("fill", '00F');
+  const restart = () => {
+
+    link = link.data(links, (d) => (`${d.source.id}-${d.target.id}`));
+    link.exit().remove();
+    link = link.enter().append("line").merge(link);
+
+    node = node.data(nodes, (d) => (d.id));
+    node.exit().remove();
+    node = node.enter().append("circle")
+            .attr("fill", (d) => colorScale(d.group))
+            .attr("r", 5).merge(node)
+            .call(drag(simulation));
+
+    simulation.nodes(nodes);
+    simulation.force("charge",
+      d3.forceManyBody().strength(-30)
+    );
+    simulation.force('link',
+      d3.forceLink(links).id(d => d.id).distance(50)
+    );
+
+    simulation.restart();  
+  };
 
   simulation.on('tick', () => {
     link
@@ -64,22 +103,43 @@ const Graph = (props) => {
       .attr("y2", d => d.target.y);
     node
       .attr("cx", d => (d.x))
-      .attr("cy", d => (d.y));
-  })
-  
-  const restart = () => {
-    simulation.nodes(nodes);
-    simulation.force('link',
-      d3.forceLink(links).id(d => d.id).distance(100)
-    );
-    
-    simulation.restart();
-  };
+      .attr("cy", d => (d.y))
+      .attr("fx", 0.7);
+  });
 
-  // Most important - Cannot redraw if no restart.
-  setTimeout(() => {
-    restart()
+  d3.timeout(() => {
+    restart();
   }, 0);
+
+  const d3Interval = d3.interval(() => {
+    if (i > 1) {
+      d3Interval.stop();
+    }
+
+    newNodes.forEach(async (item, index) => {
+      const data = await getNewVenues(item);
+    
+      newNodes = [];
+      data.forEach((child) => {
+        if (nodeIds.indexOf(child.id) < 0) {
+          newNodes.push({
+            id: child.id,
+            group: i + 1
+          });
+          nodeIds.push(child.id);
+        }
+      });
+      newLinks = data.map(child => ({
+        source: item.id, target: child.id
+      }));
+
+      nodes = nodes.concat(newNodes);
+      links = links.concat(newLinks);  
+    });
+    i++;
+    restart();
+  }, updateInterval, d3.now());
+
   return null;
 };
 
