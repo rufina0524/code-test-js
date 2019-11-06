@@ -1,60 +1,89 @@
 import React from 'react';
 import * as d3 from 'd3';
-import { getSimilarVenue } from '../utils/api.utils';
+import { getVenueNearLondon, getSimilarVenue } from '../utils/api.utils';
 
-const getChildNodes = async (seedId, nodes, setNodes, links, setLinks) => {
-  const data = await getSimilarVenue({
-    venueId: seedId
-  });
-
-  setNodes(nodes.concat(data.similarVenues.items));
+const drag = simulation => {
   
-  const newLinks = data.similarVenues.items.map(item => ({
-    source: seedId, target: item.id
-  }));
-
-  setLinks(links.concat(newLinks));
+  function dragstarted(d) {
+    if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+    d.fx = d.x;
+    d.fy = d.y;
+  }
+  
+  function dragged(d) {
+    d.fx = d3.event.x;
+    d.fy = d3.event.y;
+  }
+  
+  function dragended(d) {
+    if (!d3.event.active) simulation.alphaTarget(0);
+    d.fx = null;
+    d.fy = null;
+  }
+  
+  return d3.drag()
+      .on("start", dragstarted)
+      .on("drag", dragged)
+      .on("end", dragended);
 };
+const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+const getLink = (svg) => (
+  svg.append("g")
+  .attr("stroke", "#FFF")
+  .attr("stroke-opacity", 1)
+  .selectAll("line")
+);
+const getNode = (svg) => (
+  svg.append("g")
+  .attr("stroke", "#fff")
+  .attr("stroke-width", 1.5)
+  .selectAll("circle")
+);
 
 const Graph = (props) => {
-  const width = 680;
-  const height = 340;
-  const { seedNode } = props;
-  const [ nodes, setNodes ] = React.useState([seedNode]);
-  const [ links, setLinks ] = React.useState([]);
+  const width = 1280;
+  const height = 720;
+  const { nodes: allNodes = [], links: allLinks = [] } = props;
+  const nodes = [].concat(...allNodes);
+  const links = [].concat(...allLinks);
 
-  React.useEffect(() => {
-    getChildNodes(
-      seedNode.id, nodes, setNodes,
-      links, setLinks
-    );
-  }, []);
-
-  const svg = d3.select('body')
-    .append('svg')
-    .attr("style", "position: absolute; background: red; top: 30px; left: 500px;")
+  const svg = d3.select('#graphContainer')
+    .attr("style", "position: absolute; background: black; top: 30px; left: 500px;")
     .attr('width', width)
     .attr('height', height);
 
-  const simulation = d3.forceSimulation(nodes).force('center', d3.forceCenter(width / 2, height / 2));
-  
+  if (allNodes.length > 1) {
+    svg.selectAll('g').remove();
+  }
 
-  // Draw link line.
-  const link = svg.append("g")
-    .attr("stroke", "#000")
-    .attr("stroke-opacity", 1)
-    .selectAll("line")
-    .data(links)
-    .join("line");
+  const simulation = d3.forceSimulation(nodes)
+    .force('center', d3.forceCenter(width / 2, height / 2));
 
-  const node = svg.append("g")
-    .attr("stroke", "#fff")
-    .attr("stroke-width", 1.5)
-    .selectAll("circle")
-    .data(nodes)
-    .join("circle")
-    .attr("r", 5)
-    .attr("fill", '00F');
+  let link = getLink(svg);
+  let node = getNode(svg);  
+
+  const restart = () => {
+    node = node.data(nodes, (d) => (d.id));
+    node.exit().remove();
+    node = node.enter().append("circle")
+            .attr("fill", (d) => colorScale(d.group))
+            .attr("r", 5).merge(node)
+            .call(drag(simulation));
+
+    link = link.data(links, (d) => (`${d.source.id}-${d.target.id}`));
+    link.exit().remove();
+    link = link.enter().append("line").merge(link);
+
+    simulation.nodes(nodes);
+    simulation.force("charge",
+      d3.forceManyBody().strength(-5)
+    );
+    simulation.force('link',
+      d3.forceLink(links).id(d => d.id).distance(50)
+    );
+    
+    simulation.restart();  
+  };
 
   simulation.on('tick', () => {
     link
@@ -64,23 +93,19 @@ const Graph = (props) => {
       .attr("y2", d => d.target.y);
     node
       .attr("cx", d => (d.x))
-      .attr("cy", d => (d.y));
-  })
-  
-  const restart = () => {
-    simulation.nodes(nodes);
-    simulation.force('link',
-      d3.forceLink(links).id(d => d.id).distance(100)
-    );
-    
-    simulation.restart();
-  };
+      .attr("cy", d => (d.y))
+      .attr("fx", 0.7);
+  });
 
-  // Most important - Cannot redraw if no restart.
-  setTimeout(() => {
-    restart()
+  React.useEffect(() => {
+    restart();
+  }, [nodes, links]);
+
+  d3.timeout(() => {
+    restart();
   }, 0);
-  return null;
+
+  return <svg id='graphContainer'></svg>;
 };
 
 export default Graph;
