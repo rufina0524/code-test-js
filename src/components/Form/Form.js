@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import ObjectPath from 'object-path';
 import FormInput from './FormInput';
 import FormResult from './FormResult';
-import Graph from '../Graph';
+import Graph from '../Graph/Graph';
 import { getVenueNearLondon } from '../../utils/api.utils';
 
 const formStyle = {
