@@ -7,13 +7,26 @@ import { getVenueNearLondon } from '../../utils/api.utils';
 
 const formStyle = {
   position: "absolute",
-  left: 0
+  left: 0,
+  top: 0,
+};
+
+const inputStyle = {
+  display: 'inline-block',
+  fontSize: 16,
+  padding: 5,
+  margin: 30
+};
+
+const resultStyle = {
+  display: 'block',
+  fontSize: 14,
+  marginTop: 5
 };
 
 const formInputName = {
-  clientId: 'clientId',
-  clientSecret: 'clientSecret',
-  venueName: 'venueName'
+  venueName: 'venueName',
+  authToken: 'authToken'
 };
 
 const onValueChange = (input, setInput) => (
@@ -53,39 +66,37 @@ const Form = () => {
 
   return (
     <>
-      <h1 style={{position: "fixed", top: 0, left: 0, background: "blue"}}>{ seedNode && seedNode.id }</h1>
       <form style={formStyle} onSubmit={onSubmit(input, setResults)}>
         <FormInput
           type='text'
-          name={formInputName.clientId}
-          placeholder='Client ID'
+          style={inputStyle}
+          name={formInputName.authToken}
+          placeholder='Auth token'
           onChange={onValueChange(input, setInput)}
         />
         <FormInput
           type='text'
-          name={formInputName.clientSecret}
-          placeholder='Client Secret'
-          onChange={onValueChange(input, setInput)}
-        />
-        <FormInput
-          type='text'
+          style={inputStyle}
           name={formInputName.venueName}
           placeholder='Venue name'
           onChange={onValueChange(input, setInput)}
         />
         <FormInput
+          style={inputStyle}
           type='submit'
           value='Submit'
         />
       </form>
       <FormResult
         data={results}
+        style={resultStyle}
         onClick={onVenueClick(setSeedNode)}
       />
       {
-        seedNode ?
+        seedNode && input.authToken ?
           <Graph
             seedNode={seedNode}
+            apiAuthToken={input.authToken}
           />
           : null
       }

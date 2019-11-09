@@ -3,6 +3,10 @@ import * as d3 from 'd3';
 import { getSimilarVenue } from '../utils/api.utils';
 import ObjectPath from 'object-path';
 
+const width = 700;
+const height = 500;
+const updateInterval = 3000;
+
 const drag = (simulation) => {
   function dragstarted(d) {
     if (!d3.event.active) simulation.alphaTarget(0.3).restart();
@@ -41,18 +45,16 @@ const getNode = (svg) => (
   .selectAll("circle")
 );
 
-const getNewVenues = async (seed) => {
+const getNewVenues = async (seed, authToken) => {
   const data = await getSimilarVenue({
-    venueId: seed.id
+    venueId: seed.id,
+    authToken
   });
 
   return ObjectPath.get(data, 'similarVenues.items', []);
 };
 const Graph = (props) => {
-  const width = 1280;
-  const height = 720;
-  const updateInterval = 3000;
-  const { seedNode } = props;
+  const { seedNode, apiAuthToken } = props;
   let nodes = [seedNode];
   let links = [];
   let newNodes = [seedNode];
@@ -61,7 +63,6 @@ const Graph = (props) => {
 
   React.useEffect(() => {
     document.addEventListener('keydown', (event) => {
-      console.log('event: ', event);
       if (event.code.toLowerCase() === 'space') {
         d3Interval.stop();
       }
@@ -69,7 +70,7 @@ const Graph = (props) => {
   }, []);
 
   const svg = d3.select('#graphContainer')
-    .attr("style", "position: absolute; background: black; top: 30px; left: 500px;")
+    .attr("style", "position: absolute; background: black; top: 100px; left: 500px;")
     .attr('width', width)
     .attr('height', height);
 
@@ -125,8 +126,8 @@ const Graph = (props) => {
       d3Interval.stop();
     }
 
-    newNodes.forEach(async (item, index) => {
-      const data = await getNewVenues(item);
+    newNodes.forEach(async (item) => {
+      const data = await getNewVenues(item, apiAuthToken);
     
       newNodes = [];
       data.forEach((child) => {

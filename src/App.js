@@ -1,6 +1,5 @@
 import React from 'react'
 import './App.css'
-import Graph from './components/Graph';
 import Form from './components/Form/Form';
 
 function App () {
@@ -8,8 +7,8 @@ function App () {
     <div className="App">
       <header className="App-header">
         <Form />
-        <svg id='graphContainer'></svg>
       </header>
+      <svg id='graphContainer'></svg>
     </div>
   )
 }
