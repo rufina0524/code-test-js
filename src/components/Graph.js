@@ -59,6 +59,15 @@ const Graph = (props) => {
   let newLinks = [];
   let i = 0;
 
+  React.useEffect(() => {
+    document.addEventListener('keydown', (event) => {
+      console.log('event: ', event);
+      if (event.code.toLowerCase() === 'space') {
+        d3Interval.stop();
+      }
+    })
+  }, []);
+
   const svg = d3.select('#graphContainer')
     .attr("style", "position: absolute; background: black; top: 30px; left: 500px;")
     .attr('width', width)
