@@ -2,11 +2,14 @@ import React from 'react';
 import { relative } from 'upath';
 
 const style = {
-  position: relative,
-  left: 0
+  position: 'absolute',
+  left: 0,
+  margin: 20,
+  height: 300,
+  overflowY: 'scroll'
 }
 const FormResult = (props) => {
-  const { data, onClick } = props;
+  const { data, onClick, style: itemStyle } = props;
 
   if (data && data.length) {
     return (
@@ -14,6 +17,7 @@ const FormResult = (props) => {
         {
           data.map(item => 
             <button
+              style={itemStyle}
               key={item.id}
               id={item.id}
               onClick={onClick}

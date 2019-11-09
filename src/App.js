@@ -1,6 +1,5 @@
 import React from 'react'
 import './App.css'
-import Graph from './components/Graph';
 import Form from './components/Form/Form';
 
 function App () {
@@ -9,6 +8,7 @@ function App () {
       <header className="App-header">
         <Form />
       </header>
+      <svg id='graphContainer'></svg>
     </div>
   )
 }
