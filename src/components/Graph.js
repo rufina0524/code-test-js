@@ -6,6 +6,7 @@ import ObjectPath from 'object-path';
 const width = 700;
 const height = 500;
 const updateInterval = 3000;
+const colorSceheme = 10;
 
 const drag = (simulation) => {
   function dragstarted(d) {
@@ -59,7 +60,7 @@ const Graph = (props) => {
   let links = [];
   let newNodes = [seedNode];
   let newLinks = [];
-  let i = 0;
+  let group = 0;
 
   React.useEffect(() => {
     document.addEventListener('keydown', (event) => {
@@ -122,7 +123,7 @@ const Graph = (props) => {
   }, 0);
 
   const d3Interval = d3.interval(() => {
-    if (i > 1) {
+    if (group > nodes.length) {
       d3Interval.stop();
     }
 
@@ -134,7 +135,7 @@ const Graph = (props) => {
         if (nodeIds.indexOf(child.id) < 0) {
           newNodes.push({
             id: child.id,
-            group: i + 1
+            group: (group + 1) % colorSceheme
           });
           nodeIds.push(child.id);
         }
@@ -146,7 +147,7 @@ const Graph = (props) => {
       nodes = nodes.concat(newNodes);
       links = links.concat(newLinks);  
     });
-    i++;
+    group++;
     restart();
   }, updateInterval, d3.now());
 
