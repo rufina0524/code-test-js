@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from 'prop-types';
 import * as d3 from 'd3'
 import ObjectPath from 'object-path'
 import { getSimilarVenue } from '../../utils/api.utils'
@@ -151,5 +152,10 @@ const Graph = (props) => {
 
   return null
 }
+
+Graph.propTypes = {
+  seedNode: PropTypes.object.isRequired,
+  apiAuthToken: PropTypes.string.isRequired
+};
 
 export default Graph

@@ -1,5 +1,5 @@
 import React from 'react';
-import { relative } from 'upath';
+import PropTypes from 'prop-types';
 
 const style = {
   position: 'absolute',
@@ -30,6 +30,12 @@ const FormResult = (props) => {
     );  
   }
   return null;
+};
+
+FormResult.propTypes = {
+  data: PropTypes.array.isRequired,
+  onClick: PropTypes.func,
+  style: PropTypes.object
 };
 
 export default FormResult;
