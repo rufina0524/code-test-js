@@ -1,0 +1,26 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`FormResult should match snapshot 1`] = `
+<div
+  style={
+    Object {
+      "height": 300,
+      "left": 0,
+      "margin": 20,
+      "overflowY": "scroll",
+      "position": "absolute",
+    }
+  }
+>
+  <button
+    id="mock-1"
+    onClick={[MockFunction]}
+    style={Object {}}
+  />
+  <button
+    id="mock-2"
+    onClick={[MockFunction]}
+    style={Object {}}
+  />
+</div>
+`;

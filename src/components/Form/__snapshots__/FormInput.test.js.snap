@@ -1,0 +1,11 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`FormInput should match snapshot 1`] = `
+<input
+  name="nodejs"
+  onChange={[MockFunction]}
+  placeholder="test"
+  style={Object {}}
+  type="text"
+/>
+`;

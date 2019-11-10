@@ -1,0 +1,55 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`FormInput should match snapshot 1`] = `
+<form
+  onSubmit={[Function]}
+  style={
+    Object {
+      "left": 0,
+      "position": "absolute",
+      "top": 0,
+    }
+  }
+>
+  <input
+    name="authToken"
+    onChange={[Function]}
+    placeholder="Auth token"
+    style={
+      Object {
+        "display": "inline-block",
+        "fontSize": 16,
+        "margin": 30,
+        "padding": 5,
+      }
+    }
+    type="text"
+  />
+  <input
+    name="venueName"
+    onChange={[Function]}
+    placeholder="Venue name"
+    style={
+      Object {
+        "display": "inline-block",
+        "fontSize": 16,
+        "margin": 30,
+        "padding": 5,
+      }
+    }
+    type="text"
+  />
+  <input
+    style={
+      Object {
+        "display": "inline-block",
+        "fontSize": 16,
+        "margin": 30,
+        "padding": 5,
+      }
+    }
+    type="submit"
+    value="Submit"
+  />
+</form>
+`;
